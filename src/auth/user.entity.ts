@@ -1,4 +1,5 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 import * as bcrypt from 'bcrypt';
 import { Task } from 'src/tasks/task.entity';
 
@@ -6,18 +7,38 @@ import { Task } from 'src/tasks/task.entity';
 @Entity()
 @Unique(['username']) // unique column must be defined at the database level
 export class User extends BaseEntity {
+  @ApiProperty({
+    description: 'ID único del usuario',
+    example: 1
+  })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({
+    description: 'Nombre de usuario único',
+    example: 'usuario123'
+  })
   @Column()
   username: string;
 
+  @ApiProperty({
+    description: 'Contraseña encriptada del usuario',
+    example: 'hashedPassword123'
+  })
   @Column()
   password: string;
 
+  @ApiProperty({
+    description: 'Salt utilizado para encriptar la contraseña',
+    example: 'randomSalt123'
+  })
   @Column()
   salt: string;
 
+  @ApiProperty({
+    description: 'Lista de tareas del usuario',
+    type: () => [Task]
+  })
   @OneToMany(type => Task, task => task.user, { eager: true })
   tasks: Task[];
 

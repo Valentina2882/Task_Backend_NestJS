@@ -31,20 +31,17 @@ export class AuthService {
 
     try {
       const { salt, hashPassword } = await getSaltAndHashPassword(password);
-
-      const user = new User();
-      user.username = username;
-      user.password = hashPassword;
-      user.salt = salt;
-
-      await user.save();
+      const newUser = this.userRepository.create({
+        username,
+        password: hashPassword,
+        salt,
+      });
+      await this.userRepository.save(newUser);
     } catch (error) {
-      this.logger.error(`Error while a new user trying to sign up`, error.stack);
-
       if (error.code === DbErrorCodes.DuplicateKey) { // violation of the unique constraint of the 'username' column
         throw new ConflictException('Username already exists');
       } else {
-        throw new InternalServerErrorException();
+        throw error;
       }
     }
   }

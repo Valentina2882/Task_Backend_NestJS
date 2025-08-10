@@ -14,16 +14,27 @@ import {
   Logger,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { 
+  ApiTags, 
+  ApiOperation, 
+  ApiResponse, 
+  ApiParam, 
+  ApiQuery, 
+  ApiBearerAuth,
+  ApiBody 
+} from '@nestjs/swagger';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
-import { TaskStatusValidationPipe } from './pipes/task-status-validation.pipe';
 import { TaskStatus } from './helpers/task-status.enum';
 import { Task } from './task.entity';
 import { TasksService } from './tasks.service';
 import { GetUser } from 'src/auth/decorators/getUser.decorator';
 import { User } from 'src/auth/user.entity';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
-@Controller('tasks')
+@ApiTags('Tareas')
+@ApiBearerAuth()
+@Controller()
 @UseGuards(AuthGuard())
 export class TasksController {
   // adding logger
@@ -39,6 +50,18 @@ export class TasksController {
    * @param {GetTasksFilterDto} filterDto the request query params
    * @returns tasks fetched from database
    */
+  @ApiOperation({ 
+    summary: 'Obtener tareas',
+    description: 'Obtiene todas las tareas del usuario autenticado, con opción de filtrado por estado y búsqueda por texto'
+  })
+  @ApiQuery({ name: 'status', enum: TaskStatus, required: false, description: 'Filtrar por estado de la tarea' })
+  @ApiQuery({ name: 'search', required: false, description: 'Buscar en título y descripción' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Lista de tareas obtenida exitosamente',
+    type: [Task]
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
   @Get()
   getTasks(
     @Query(ValidationPipe) filterDto: GetTasksFilterDto,
@@ -55,6 +78,18 @@ export class TasksController {
    * @param {number} id the id of the task to be fetched from database
    * @returns the task corresponding to the id
    */
+  @ApiOperation({ 
+    summary: 'Obtener tarea por ID',
+    description: 'Obtiene una tarea específica por su ID'
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tarea', type: 'number' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Tarea encontrada exitosamente',
+    type: Task
+  })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
   @Get('/:id')
   getTaskById(
     @Param('id', ParseIntPipe) id: number,
@@ -71,6 +106,18 @@ export class TasksController {
    * @param {CreateTaskDto} createTaskDto the request body params
    * @returns the newly created task
    */
+  @ApiOperation({ 
+    summary: 'Crear nueva tarea',
+    description: 'Crea una nueva tarea para el usuario autenticado'
+  })
+  @ApiBody({ type: CreateTaskDto })
+  @ApiResponse({ 
+    status: 201, 
+    description: 'Tarea creada exitosamente',
+    type: Task
+  })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
   @Post()
   @UsePipes(ValidationPipe)
   createTask(
@@ -86,26 +133,48 @@ export class TasksController {
    * @description
    * the controller method to update the status of an existing task
    * @param {number} id the id of the task to be updated
-   * @param {TaskStatus} status the new status of the task
+   * @param {UpdateTaskDto} updateTaskDto the new status of the task
    * @returns the updated task
    */
+  @ApiOperation({ 
+    summary: 'Actualizar estado de tarea',
+    description: 'Actualiza el estado de una tarea existente'
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tarea', type: 'number' })
+  @ApiBody({ type: UpdateTaskDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Tarea actualizada exitosamente',
+    type: Task
+  })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
   @Patch('/:id/status')
   updateTaskStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body('status', TaskStatusValidationPipe) status: TaskStatus,
+    @Body() updateTaskDto: UpdateTaskDto,
     @GetUser() user: User
   ): Promise<Task> {
-    this.logger.verbose(`${user.username} updating a task corresponding to the id ${id} with the status '${status}'`);
+    this.logger.verbose(`${user.username} actualizando una tarea con el id ${id} y el estado '${updateTaskDto.status}'`);
 
-    return this.tasksService.updateTaskStatus(id, status, user);
+    return this.tasksService.updateTaskStatus(id, updateTaskDto.status, user);
   }
 
   /**
    * @description
-   * the controller method to delete an existing task
+   * the Controller method to delete an existing Task
    * @param {number} id the id of the task to be deleted
    * @returns
    */
+  @ApiOperation({ 
+    summary: 'Eliminar tarea',
+    description: 'Elimina una tarea existente'
+  })
+  @ApiParam({ name: 'id', description: 'ID de la tarea', type: 'number' })
+  @ApiResponse({ status: 200, description: 'Tarea eliminada exitosamente' })
+  @ApiResponse({ status: 401, description: 'No autorizado' })
+  @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
   @Delete('/:id')
   deleteTask(
     @Param('id', ParseIntPipe) id: number,
