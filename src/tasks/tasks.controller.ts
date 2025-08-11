@@ -34,7 +34,7 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 
 @ApiTags('Tareas')
 @ApiBearerAuth()
-@Controller()
+@Controller('tasks')
 @UseGuards(AuthGuard())
 export class TasksController {
   // adding logger
@@ -64,7 +64,7 @@ export class TasksController {
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @Get()
   getTasks(
-    @Query(ValidationPipe) filterDto: GetTasksFilterDto,
+    @Query() filterDto: GetTasksFilterDto,
     @GetUser() user: User
   ): Promise<Task[]> {
     this.logger.verbose(`${user.username} retrieving all tasks. Filters: ${JSON.stringify(filterDto)}`);
@@ -151,28 +151,32 @@ export class TasksController {
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
   @Patch('/:id/status')
+  @UsePipes(ValidationPipe)
   updateTaskStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTaskDto: UpdateTaskDto,
     @GetUser() user: User
   ): Promise<Task> {
-    this.logger.verbose(`${user.username} actualizando una tarea con el id ${id} y el estado '${updateTaskDto.status}'`);
+    this.logger.verbose(`${user.username} updating task ${id} with status ${updateTaskDto.status}`);
 
     return this.tasksService.updateTaskStatus(id, updateTaskDto.status, user);
   }
 
   /**
    * @description
-   * the Controller method to delete an existing Task
+   * the controller method to delete an existing task from the database
    * @param {number} id the id of the task to be deleted
-   * @returns
+   * @returns void
    */
   @ApiOperation({ 
     summary: 'Eliminar tarea',
     description: 'Elimina una tarea existente'
   })
   @ApiParam({ name: 'id', description: 'ID de la tarea', type: 'number' })
-  @ApiResponse({ status: 200, description: 'Tarea eliminada exitosamente' })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Tarea eliminada exitosamente'
+  })
   @ApiResponse({ status: 401, description: 'No autorizado' })
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
   @Delete('/:id')
@@ -180,7 +184,7 @@ export class TasksController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: User
   ): Promise<void> {
-    this.logger.verbose(`${user.username} deleting a task with id ${id}`);
+    this.logger.verbose(`${user.username} deleting task ${id}`);
 
     return this.tasksService.deleteTask(id, user);
   }

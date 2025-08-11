@@ -1,5 +1,5 @@
 import { TaskStatus } from '../helpers/task-status.enum';
-import { IsOptional, IsIn, IsNotEmpty } from 'class-validator';
+import { IsOptional, IsIn, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 // defining the properties that may be used while fetching the tasks
@@ -20,6 +20,6 @@ export class GetTasksFilterDto {
     required: false
   })
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   search: string;
 }
