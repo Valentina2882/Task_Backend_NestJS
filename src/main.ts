@@ -7,7 +7,7 @@ async function bootstrap() {
   // creating the application instance
   const app = await NestFactory.create(AppModule);
 
-  // Configurar CORS para permitir peticiones desde Flutter Web
+  // Configurar CORS para permitir peticiones desde Flutter Web y Vercel
   app.enableCors({
     origin: [
       'http://localhost:28263', // Flutter Web por defecto
@@ -20,6 +20,8 @@ async function bootstrap() {
       'http://127.0.0.1:8080',  // IP local puerto alternativo
       'http://127.0.0.1:8081',  // IP local puerto alternativo
       'http://127.0.0.1:8082',  // IP local puerto alternativo
+      'https://*.vercel.app',   // Vercel domains
+      'https://*.vercel.app/*', // Vercel domains with paths
       // Permitir todos los orígenes en desarrollo (solo para debug)
       true,
     ],
