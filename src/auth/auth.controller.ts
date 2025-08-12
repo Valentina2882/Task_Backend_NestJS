@@ -1,12 +1,14 @@
-import { Body, Controller, Logger, Post, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Logger, Post, ValidationPipe, Get, UseGuards, Request } from '@nestjs/common';
 import { 
   ApiTags, 
   ApiOperation, 
   ApiResponse, 
-  ApiBody 
+  ApiBody,
+  ApiBearerAuth
 } from '@nestjs/swagger';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('Autenticación')
 @Controller('auth')
@@ -77,5 +79,40 @@ export class AuthController {
     this.logger.verbose(`A user is trying to sign in`);
 
     return this.authService.signIn(authCredentialsDto);
+  }
+
+  /**
+   * @description
+   * the controller method to verify JWT token
+   * @returns user information if token is valid
+   */
+  @ApiOperation({ 
+    summary: 'Verificar token',
+    description: 'Verifica la validez del token JWT y devuelve información del usuario'
+  })
+  @ApiBearerAuth()
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Token válido',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', example: 1 },
+        username: { type: 'string', example: 'usuario123' },
+        message: { type: 'string', example: 'Token válido' }
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token inválido o expirado' })
+  @UseGuards(JwtAuthGuard)
+  @Get('/verify')
+  async verifyToken(@Request() req): Promise<{ id: number; username: string; message: string }> {
+    this.logger.verbose(`Token verification requested`);
+    
+    return {
+      id: req.user.id,
+      username: req.user.username,
+      message: 'Token válido'
+    };
   }
 }

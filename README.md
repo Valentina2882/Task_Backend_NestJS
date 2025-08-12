@@ -1,79 +1,64 @@
-## Description
+# Task Management Backend (NestJS)
 
-Demonstration of CRUD operations along with user authentication and authorization in a Task Management system implemented using NestJS, TypeScript and Postgresql database.
+Este es el backend de la aplicación de gestión de tareas, desarrollado por **[Tu Nombre]** usando **NestJS** y **TypeORM**.
 
-## Routes
+## Características principales
+- Registro y login de usuarios (JWT)
+- Gestión de tareas (CRUD)
+- Filtros y estados de tareas
+- Seguridad y validación
 
-### 1. Auth routes
+## Instalación y configuración
 
-`POST /auth/signup`: To sign up a new user.
+1. **Clona el repositorio:**
+   ```bash
+   git clone <repo-url>
+   cd Task-Management
+   ```
 
-`POST /auth/signin`: To sign in an existing user.
+2. **Instala dependencias:**
+   ```bash
+   npm install
+   ```
 
-### 2. Task routes
+3. **Configura las variables de entorno:**
+   - Crea un archivo `.env` en la raíz con el siguiente contenido:
+     ```env
+     DB_HOST=localhost
+     DB_PORT=5432
+     DB_USERNAME=postgres
+     DB_PASSWORD=postgres
+     DB_DATABASE=tasks
+     JWT_SECRET=supersecret
+     JWT_EXPIRES_IN=3600s
+     ```
+   - Ajusta los valores según tu entorno.
 
-`GET /tasks`: To fetch either all tasks from database or tasks based on some search parameters.
+4. **Inicia el servidor:**
+   ```bash
+   npm run start:dev
+   ```
 
-`POST /tasks`: To create a new task.
+## Endpoints principales
 
-`GET /tasks/:id`: To fetch a task by it's id.
+### Autenticación
+- **POST** `/auth/signup` — Registro de usuario
+- **POST** `/auth/signin` — Login de usuario
+- **GET** `/auth/verify` — Verifica el token JWT
 
-`PATCH /tasks/:id`: To update a task corresponding to an id.
+### Tareas (protegido por JWT)
+- **GET** `/tasks` — Lista tareas del usuario
+- **POST** `/tasks` — Crea una nueva tarea
+- **PATCH** `/tasks/:id/status` — Cambia el estado de una tarea
+- **DELETE** `/tasks/:id` — Elimina una tarea
 
-`DELETE /tasks/:id`: To delete a task corresponding to an id.
+## Despliegue
+- El backend está desplegado en **Railway**.
 
+## Documentación de la API
+- La documentación interactiva de la API está disponible en **Swagger** (por ejemplo, `/api` o `/docs`).
 
-## Database schemas
+---
 
-### 1. User schema
+**Autor:** Valentina2882.
 
-`id (type: number)`: This column denotes a unique id for a user which is also the Primary Key for the table.
-
-`username (type: string)`: This column denotes the unique username of a user.
-
-`password (type: string)`: This column denotes the user's hashed password.
-
-`salt (type: string)`: This column denotes the salt used during the hashing of the user's plaintext password.
-
-### 2. Task schema
-
-`id (type: number)`: This column denotes a unique id for a task which is also the Primary Key for the table.
-
-`title (type: string)`: This column denotes the title of a task.
-
-`description (type: string)`: This column denotes the description of a task.
-
-`status (type: string)`: This column denotes the current status of a string.
-
-`userId (type: number)`: This column denotes the id of an existing user who created the task, which is the Foreign Key of the table.
-
-## Environment variables
-
-### 1. Environment variables for database configurations
-`DB_HOST` `DB_PORT` `DB_USER` `DB_PASSWORD` `DB_NAME`
-
-### 2. Other environment variables
-`DEV_PORT` `JWT_SECRET` `JWT_EXPIRY`
-
-## Steps to run
-
-### 1. Getting the repository
-
-```
-1. Make sure that you have Node installed.
-2. Clone the repository.
-3. Move into the project's directory.
-4. Create a .env file and set the environment variables.
-```
-
-### 2. Installation
-
-```bash
-$ npm install
-```
-
-### 3. Running the app
-
-```bash
-$ npm run start:dev
-```
